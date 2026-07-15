@@ -14,8 +14,16 @@ func TestEnvReturnsFallbackWhenUnset(t *testing.T) {
 }
 
 func TestEnvReturnsValueWhenSet(t *testing.T) {
-	os.Setenv("DEVBOARD_TEST_KEY", "real")
-	defer os.Unsetenv("DEVBOARD_TEST_KEY")
+	if err := os.Setenv("DEVBOARD_TEST_KEY", "real"); err != nil {
+		t.Fatalf("failed to set env: %v", err)
+	}
+
+	defer func() {
+		if err := os.Unsetenv("DEVBOARD_TEST_KEY"); err != nil {
+			t.Errorf("failed to unset env: %v", err)
+		}
+	}()
+
 	if got := env("DEVBOARD_TEST_KEY", "fallback"); got != "real" {
 		t.Errorf("env() = %q, want %q", got, "real")
 	}

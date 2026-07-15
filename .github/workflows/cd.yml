@@ -1,0 +1,32 @@
+# GOAL: Deploy the application to production after CI completed.
+
+name: CD
+
+on:
+  workflow_run: 
+    workflows: ["CI"]
+    branches: 
+      - master
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: copy the .env file
+        run: cp .env.example .env
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Deploy Container by docker-compose
+        run: |
+          docker-compose pull
+          docker-compose up -d

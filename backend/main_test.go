@@ -7,7 +7,10 @@ import (
 )
 
 func TestEnvReturnsFallbackWhenUnset(t *testing.T) {
-	os.Unsetenv("DEVBOARD_TEST_KEY")
+	if err := os.Unsetenv("DEVBOARD_TEST_KEY"); err != nil {
+		t.Fatalf("failed to unset env: %v", err)
+	}
+
 	if got := env("DEVBOARD_TEST_KEY", "fallback"); got != "fallback" {
 		t.Errorf("env() = %q, want %q", got, "fallback")
 	}

@@ -17,7 +17,6 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: '1.23'
-          go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
 
       - name: Install Dependencies
@@ -34,8 +33,24 @@ jobs:
         run: go test -v ./...
         working-directory: backend
 
+       - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          push: true
+          context: ./backend
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-be-arch:latest
+
+      
+
 
   frontend:
+    needs: backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -60,4 +75,15 @@ jobs:
         run: npm run test 
         working-directory: frontend
 
-            
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          push: true
+          context: ./frontend
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/devboard-fe-arch:latest      
